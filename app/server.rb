@@ -9,9 +9,14 @@ port = ENV.fetch('PORT', 4221).to_i
 
 server = TCPServer.new(port)
 
-loop do
-  client_socket = server.accept
-  client_socket.puts("HTTP/1.1 200 OK\r\n\r\n")&.chomp         # it should be 'write' method, not usual 'puts'
-  client_socket.puts("Content-Type: text/html\r\n\r\n")&.chomp # same - 'write' method
-  client_socket.close
+client_socket = server.accept
+
+status_line = client_socket.readline.chomp
+_, path, http_version, *__ = status_line.split
+
+if path != '/'
+  client_socket.puts("HTTP/1.1 404 Not Found\r\n\r\n")
+else 
+  client_socket.puts("HTTP/1.1 200 OK\r\n\r\n")
 end
+client_socket.close
